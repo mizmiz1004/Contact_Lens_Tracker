@@ -35,13 +35,14 @@
   --safe:     #2ecc8f;
   --safe-l:   #e8faf3;
 
-  --nav-h:    64px;
+  --nav-h:    54px;
   --sab:      env(safe-area-inset-bottom, 0px);
   --radius:   20px;
   --radius-s: 14px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+svg { display: block; flex-shrink: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {
   font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
@@ -77,11 +78,9 @@ nav {
 }
 .nav-btn.active { color: var(--accent); }
 .nav-icon-wrap {
-  width: 36px; height: 28px; border-radius: 14px;
+  width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
 }
-.nav-btn.active .nav-icon-wrap { background: var(--accent-l); }
 
 /* ── PAGE HEADER ── */
 .page-header {
@@ -249,14 +248,14 @@ nav {
 }
 .num-input:focus { outline: none; border-color: #e8a020; background: #fdf4e3; }
 .btn-reset {
-  width: 100%; margin-top: 16px; background: var(--danger-l);
-  border: 1.5px solid rgba(245,108,108,0.25); border-radius: var(--radius-s);
-  color: var(--danger); padding: 14px; font-family: inherit;
-  font-size: 0.76rem; font-weight: 800; letter-spacing: 0.04em;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 16px; background: transparent;
+  border: 1px solid rgba(245,108,108,0.3); border-radius: 10px;
+  color: var(--danger); padding: 10px 16px; font-family: inherit;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
   transition: all .15s;
 }
-.btn-reset:hover { background: rgba(245,108,108,0.15); }
+.btn-reset:hover { background: var(--danger-l); }
 
 /* ── TOAST ── */
 .toast {
@@ -391,7 +390,7 @@ nav {
         <input class="num-input" type="number" id="warnDays" value="2" min="1" max="7" onchange="saveSettings()">
       </div>
       <button class="btn-reset" onclick="resetAll()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> 全データをリセット
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> 全データをリセット
       </button>
     </div>
   </div>
