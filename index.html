@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LENS / OS</title>
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LensLog">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0f;
+  --bg2: #0d1018;
+  --surface: #111520;
+  --surface2: #161b28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8ecf4;
+  --muted: #4a5168;
+  --muted2: #6b7590;
+  --accent: #7eb8f7;
+  --accent2: #4a90e2;
+  --accent-glow: rgba(126,184,247,0.15);
+  --accent-dim: rgba(126,184,247,0.08);
+  --danger: #f77e7e;
+  --danger-bg: rgba(247,126,126,0.08);
+  --warn: #f7c97e;
+  --warn-bg: rgba(247,201,126,0.08);
+  --safe: #7ef7b8;
+  --safe-bg: rgba(126,247,184,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 100px;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(78,144,226,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* HEADER */
+.header {
+  padding: 52px 0 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  animation: slideIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+.header-eyebrow {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-eyebrow::before {
+  content: '';
+  width: 16px; height: 1px;
+  background: var(--accent);
+}
+.header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.header h1 .slash { color: var(--accent); margin: 0 2px; }
+.header-date {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--muted2);
+  letter-spacing: 0.08em;
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* HERO */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+.hero-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 30px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border: 1px solid;
+  transition: all 0.3s;
+}
+.status-chip.wearing { background: var(--accent-dim); border-color: rgba(126,184,247,0.3); color: var(--accent); }
+.status-chip.off { background: var(--safe-bg); border-color: rgba(126,247,184,0.3); color: var(--safe); }
+.status-chip.unset { background: rgba(255,255,255,0.03); border-color: var(--border); color: var(--muted2); }
+.pulse-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.7);} }
+
+.ring-wrap {
+  position: relative;
+  width: 110px; height: 110px;
+  flex-shrink: 0;
+}
+.ring-svg { transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 5; }
+.ring-prog {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16,1,0.3,1), stroke 0.5s;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+.ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-big {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.ring-unit {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.52rem;
+  color: var(--muted2);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.hero-nums { flex: 1; }
+.hero-num {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--accent);
+}
+.hero-num-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted2);
+  letter-spacing: 0.12em;
+  margin-top: 3px;
+}
+.divider-h { height: 1px; background: var(--border); margin: 18px 0; }
+
+/* Dot strip */
+.dot-strip-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dot-strip-label span {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.dot-strip { display: flex; gap: 4px; flex-wrap: wrap; }
+.dot-cell {
+  width: calc((100% - 13*4px) / 14);
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.3s;
+}
+.dot-cell.worn-dot { background: var(--accent); border-color: transparent; box-shadow: 0 0 8px rgba(126,184,247,0.4); }
+.dot-cell.off-dot { background: var(--safe); border-color: transparent; box-shadow: 0 0 6px rgba(126,247,184,0.3); opacity: 0.6; }
+.dot-cell.current-dot { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* AUTO MODE NOTICE */
+.auto-notice {
+  background: var(--accent-dim);
+  border: 1px solid rgba(126,184,247,0.15);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted2);
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.auto-notice span { color: var(--accent); }
+
+/* ALERT */
+.alert {
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  display: none;
+  margin-bottom: 12px;
+  border: 1px solid;
+  animation: slideIn 0.4s cubic-bezier(0.16,1,0.3,1);
+  letter-spacing: 0.02em;
+}
+.alert.danger { background: var(--danger-bg); border-color: rgba(247,126,126,0.25); color: var(--danger); display: flex; align-items: center; gap: 10px; }
+.alert.warn { background: var(--warn-bg); border-color: rgba(247,201,126,0.25); color: var(--warn); display: flex; align-items: center; gap: 10px; }
+.alert.safe { background: var(--safe-bg); border-color: rgba(126,247,184,0.2); color: var(--safe); display: flex; align-items: center; gap: 10px; }
+
+/* BUTTONS */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; animation: slideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+.actions2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 15px 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.3; cursor: default; transform: none !important; }
+.btn-wore { background: var(--accent); color: #050810; box-shadow: 0 4px 20px rgba(126,184,247,0.25); }
+.btn-wore:hover:not(:disabled) { box-shadow: 0 4px 28px rgba(126,184,247,0.4); }
+.btn-off { background: var(--surface2); color: var(--safe); border: 1px solid rgba(126,247,184,0.2); }
+.btn-new { background: var(--surface2); color: var(--danger); border: 1px solid rgba(247,126,126,0.2); }
+.btn-undo { background: var(--surface2); color: var(--muted2); border: 1px solid var(--border); }
+
+/* TABS */
+.tabs-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  animation: slideIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s both;
+}
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 6px 0;
+  gap: 2px;
+}
+.tab {
+  flex: 1;
+  padding: 10px 6px;
+  border: none;
+  background: transparent;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab.active { color: var(--accent); background: var(--surface2); }
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 8px var(--accent);
+}
+.tab-content { padding: 22px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* CALENDAR */
+.cal-nav-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.cal-month { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+.cal-arrow {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted2);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.cal-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.cal-dow { text-align: center; font-family: 'Syne Mono', monospace; font-size: 0.55rem; color: var(--muted); padding: 6px 0; letter-spacing: 0.1em; }
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  color: var(--muted2);
+}
+.cal-day:not(.empty):not(.future):hover { background: var(--surface2); color: var(--text); }
+.cal-day.today { outline: 1px solid var(--accent); outline-offset: -1px; color: var(--text); }
+.cal-day.worn { background: rgba(126,184,247,0.15); color: var(--accent); font-weight: 700; }
+.cal-day.off-day { background: rgba(126,247,184,0.1); color: var(--safe); font-weight: 600; }
+.cal-day.new-pair::after {
+  content: '';
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 4px var(--warn);
+}
+.cal-day.future { color: rgba(255,255,255,0.08); cursor: default; }
+.cal-day.empty { cursor: default; }
+.cal-legend { display: flex; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.leg-item { display: flex; align-items: center; gap: 6px; font-family: 'Syne Mono', monospace; font-size: 0.58rem; color: var(--muted2); letter-spacing: 0.08em; }
+.leg-dot { width: 10px; height: 10px; border-radius: 3px; }
+.leg-dot.w { background: rgba(126,184,247,0.5); }
+.leg-dot.o { background: rgba(126,247,184,0.4); }
+.leg-dot.n { background: var(--warn); border-radius: 50%; box-shadow: 0 0 4px var(--warn); }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.3;
+}
+.stat-num { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--accent); margin-bottom: 6px; }
+.stat-label { font-family: 'Syne Mono', monospace; font-size: 0.52rem; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.4; }
+.rate-bar-wrap { margin-bottom: 20px; }
+.rate-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rate-title { font-family: 'Syne Mono', monospace; font-size: 0.58rem; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.rate-value { font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+.rate-bar-bg { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.rate-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 2px; box-shadow: 0 0 8px var(--accent); transition: width 1.2s cubic-bezier(0.16,1,0.3,1); width: 0%; }
+.tip-card { background: var(--accent-dim); border: 1px solid rgba(126,184,247,0.15); border-radius: 12px; padding: 14px 16px; font-size: 0.73rem; line-height: 1.6; color: var(--muted2); display: flex; gap: 10px; align-items: flex-start; }
+.tip-icon { color: var(--accent); flex-shrink: 0; }
+
+/* HISTORY */
+.history-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.history-list::-webkit-scrollbar { width: 3px; }
+.history-list::-webkit-scrollbar-track { background: transparent; }
+.history-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.h-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; font-size: 0.7rem; transition: border-color 0.15s; }
+.h-item:hover { border-color: var(--border2); }
+.h-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.h-dot.w { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.h-dot.o { background: var(--safe); box-shadow: 0 0 6px var(--safe); }
+.h-date { color: var(--muted2); font-family: 'Syne Mono', monospace; font-size: 0.65rem; flex: 1; }
+.h-tag { font-family: 'Syne Mono', monospace; font-size: 0.58rem; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 600; }
+.h-tag.w { background: rgba(126,184,247,0.12); color: var(--accent); border: 1px solid rgba(126,184,247,0.2); }
+.h-tag.o { background: rgba(126,247,184,0.1); color: var(--safe); border: 1px solid rgba(126,247,184,0.2); }
+.h-tag.n { background: rgba(247,201,126,0.1); color: var(--warn); border: 1px solid rgba(247,201,126,0.2); }
+.h-tag.auto { background: rgba(126,184,247,0.06); color: var(--muted2); border: 1px solid rgba(126,184,247,0.1); font-size: 0.52rem; }
+
+/* SETTINGS */
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); gap: 16px; }
+.setting-row:last-of-type { border-bottom: none; }
+.setting-name { font-size: 0.78rem; font-weight: 600; margin-bottom: 3px; }
+.setting-desc { font-family: 'Syne Mono', monospace; font-size: 0.6rem; color: var(--muted2); letter-spacing: 0.06em; }
+.num-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-family: 'Syne Mono', monospace; font-size: 0.8rem; width: 58px; text-align: center; color: var(--accent); flex-shrink: 0; transition: border-color 0.15s; }
+.num-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.btn-reset { width: 100%; margin-top: 16px; background: var(--danger-bg); border: 1px solid rgba(247,126,126,0.2); color: var(--danger); border-radius: 12px; padding: 13px; font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 600; cursor: pointer; letter-spacing: 0.06em; transition: all 0.15s; }
+.btn-reset:hover { background: rgba(247,126,126,0.15); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 11px 22px; border-radius: 30px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s; opacity: 0; z-index: 200; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+@keyframes slideIn { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
+</style>
+</head>
+<body>
+
+  <!-- SVG icon defs -->
+  <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="ic-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </symbol>
+      <symbol id="ic-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+      </symbol>
+      <symbol id="ic-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+      </symbol>
+      <symbol id="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </symbol>
+      <symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </symbol>
+      <symbol id="ic-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <circle cx="3" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="3" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+      </symbol>
+      <symbol id="ic-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </symbol>
+      <symbol id="ic-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </symbol>
+      <symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/>
+        <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14z"/>
+      </symbol>
+      <symbol id="ic-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </symbol>
+      <symbol id="ic-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </symbol>
+      <symbol id="ic-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </symbol>
+          <symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </symbol>
+      <symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </symbol>
+    </defs>
+  </svg>
+
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Contact Lens OS</div>
+      <h1>LENS<span class="slash">/</span>LOG</h1>
+    </div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+
+  <div class="alert" id="alertBanner"></div>
+
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-label">今日のステータス</div>
+        <div class="status-chip unset" id="statusChip">
+          <div class="pulse-dot"></div>
+          <span id="statusText">未記録</span>
+        </div>
+      </div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" width="110" height="110" viewBox="0 0 110 110">
+          <circle class="ring-track" cx="55" cy="55" r="46"/>
+          <circle class="ring-prog" id="ringProg" cx="55" cy="55" r="46"
+            stroke-dasharray="289.0" stroke-dashoffset="289.0" stroke="var(--accent)"/>
+        </svg>
+        <div class="ring-inner">
+          <div class="ring-big" id="ringNum" style="color:var(--accent)">—</div>
+          <div class="ring-unit">残り日</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="hero-label">使用中ペア 装着日数</div>
+      <div class="hero-num" id="wornNum">0</div>
+      <div class="hero-num-label">DAYS WORN / <span id="maxLabel">14</span></div>
+    </div>
+
+    <div class="divider-h"></div>
+
+    <div class="dot-strip-label">
+      <span>装着ログ — 現在のペア</span>
+      <span id="pairStartLbl"></span>
+    </div>
+    <div class="dot-strip" id="dotStrip"></div>
+  </div>
+
+  <div class="auto-notice">
+    <svg width="13" height="13" style="vertical-align:-1px"><use href="#ic-zap"/></svg>
+    <span>AUTO</span> ペア開始日から自動カウント中 — 外した日だけ記録
+  </div>
+  <div class="actions">
+    <button class="btn btn-off" id="btnOff" onclick="logOff()"><svg width="16" height="16" style="vertical-align:-2px"><use href="#ic-eye-off"/></svg> 今日は外した</button>
+    <button class="btn btn-new" onclick="startNewPair()"><svg width="16" height="16" style="vertical-align:-2px"><use href="#ic-refresh"/></svg> 新ペアに交換</button>
+  </div>
+  <div class="actions2" style="grid-template-columns:1fr;">
+    <button class="btn btn-undo" id="btnUndo" onclick="undoOff()"><svg width="15" height="15" style="vertical-align:-2px"><use href="#ic-undo"/></svg> 今日の「外した」を取り消す</button>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('calendar',this)"><svg width="13" height="13" style="vertical-align:-2px"><use href="#ic-cal"/></svg> Cal</button>
+      <button class="tab" onclick="switchTab('stats',this)"><svg width="13" height="13" style="vertical-align:-2px"><use href="#ic-chart"/></svg> Stats</button>
+      <button class="tab" onclick="switchTab('history',this)"><svg width="13" height="13" style="vertical-align:-2px"><use href="#ic-list"/></svg> Log</button>
+      <button class="tab" onclick="switchTab('settings',this)"><svg width="13" height="13" style="vertical-align:-2px"><use href="#ic-settings"/></svg> Set</button>
+    </div>
+    <div class="tab-content">
+
+      <div class="tab-pane active" id="tab-calendar">
+        <div class="cal-nav-row">
+          <button class="cal-arrow" onclick="changeMonth(-1)"><svg width="16" height="16"><use href="#ic-left"/></svg></button>
+          <div class="cal-month" id="calMonthLabel"></div>
+          <button class="cal-arrow" onclick="changeMonth(1)"><svg width="16" height="16"><use href="#ic-right"/></svg></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <div class="leg-item"><div class="leg-dot w"></div> 装着</div>
+          <div class="leg-item"><div class="leg-dot o"></div> 休息</div>
+          <div class="leg-item"><div class="leg-dot n"></div> 新ペア</div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-stats">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="statMonth">0</div><div class="stat-label">今月装着日</div></div>
+          <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">連続日数</div></div>
+          <div class="stat-card"><div class="stat-num" id="statPairs">0</div><div class="stat-label">ペア数</div></div>
+        </div>
+        <div class="rate-bar-wrap">
+          <div class="rate-label-row">
+            <div class="rate-title">今月の装着率</div>
+            <div class="rate-value" id="rateVal">—%</div>
+          </div>
+          <div class="rate-bar-bg"><div class="rate-bar-fill" id="rateBar"></div></div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon"><svg width="16" height="16"><use href="#ic-bulb"/></svg></div>
+          <div id="tipText"></div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-history">
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="tab-pane" id="tab-settings">
+        <div class="setting-row">
+          <div><div class="setting-name">使用期間の上限</div><div class="setting-desc">通常 14日（2WEEK）</div></div>
+          <input class="num-input" type="number" id="maxDays" value="14" min="1" max="30" onchange="saveSettings()">
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">警告タイミング</div><div class="setting-desc">交換の何日前から</div></div>
+          <input class="num-input" type="number" id="warnDays" value="2" min="1" max="7" onchange="saveSettings()">
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-name">休息リマインダー</div><div class="setting-desc">連続○日以上で通知</div></div>
+          <input class="num-input" type="number" id="restRemind" value="5" min="1" max="14" onchange="saveSettings()">
+        </div>
+        <button class="btn-reset" onclick="resetAll()"><svg width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#ic-trash"/></svg>全データをリセット</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'lenslog_v3';
+let D = { log: {}, pairs: [], settings: { maxDays: 14, warnDays: 2, restRemind: 5 } };
+
+// ---- ユーティリティ ----
+function load() {
+  try {
+    const s = localStorage.getItem(KEY);
+    if (s) D = { ...D, ...JSON.parse(s) };
+    D.settings = { maxDays: 14, warnDays: 2, restRemind: 5, ...D.settings };
+    if (!D.pairs) D.pairs = [];
+    if (!D.log)   D.log   = {};
+  } catch(e) {}
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
+
+// タイムゾーン安全な今日のISO文字列
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ISO文字列 → ローカルDateオブジェクト（UTCズレ防止）
+function parseDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// Dateオブジェクト → ISO文字列
+function toISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtDate(iso) {
+  const d = parseDate(iso);
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
+}
+function fmtFull(iso) {
+  const d = parseDate(iso);
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
+}
+
+function curPair() { return D.pairs.length ? D.pairs[D.pairs.length - 1] : null; }
+
+// ある日付が「どのペアに属するか」を返す（なければnull）
+function pairOf(iso) {
+  // 後ろから探して、開始日 <= iso のペアが対象
+  for (let i = D.pairs.length - 1; i >= 0; i--) {
+    if (D.pairs[i].start <= iso) return D.pairs[i];
+  }
+  return null;
+}
+
+// ある日が「装着中」かどうか
+// 条件: ペアが存在 & ペア開始日以降 & 今日以前 & offじゃない & 次のペアの開始日より前
+function isWorn(iso) {
+  if (iso > today()) return false;
+  const p = pairOf(iso);
+  if (!p) return false;
+  // 次のペアの開始日より前かチェック
+  const pIdx = D.pairs.indexOf(p);
+  if (pIdx < D.pairs.length - 1) {
+    if (iso >= D.pairs[pIdx + 1].start) return false;
+  }
+  return D.log[iso] !== 'off';
+}
+
+function isOff(iso) { return D.log[iso] === 'off'; }
+
+// 現在のペアの装着日数（開始日から今日まで off 以外の日を数える）
+function wornCount() {
+  const p = curPair();
+  if (!p) return 0;
+  const t = today();
+  let count = 0;
+  const d = parseDate(p.start);
+  while (true) {
+    const iso = toISO(d);
+    if (iso > t) break;
+    if (!isOff(iso)) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+// ---- アクション ----
+function logOff() {
+  if (!curPair()) { showToast('先にペアを開始してください'); return; }
+  D.log[today()] = 'off';
+  save(); render(); showToast('休息日を記録しました');
+}
+
+function undoOff() {
+  const t = today();
+  if (D.log[t] !== 'off') { showToast('今日の休息記録がありません'); return; }
+  delete D.log[t];
+  save(); render(); showToast('取り消しました — 今日は装着扱いに戻りました');
+}
+
+function startNewPair() {
+  if (!confirm('今日から新しいレンズペアに交換しますか？')) return;
+  const t = today();
+  D.pairs.push({ start: t });
+  if (D.log[t] === 'off') delete D.log[t]; // 今日のoff記録をクリア
+  save(); render(); showToast('新しいペアを開始しました');
+}
+
+function saveSettings() {
+  D.settings.maxDays   = parseInt(document.getElementById('maxDays').value)   || 14;
+  D.settings.warnDays  = parseInt(document.getElementById('warnDays').value)  || 2;
+  D.settings.restRemind= parseInt(document.getElementById('restRemind').value)|| 5;
+  save(); render();
+}
+
+function resetAll() {
+  if (!confirm('全データを削除しますか？')) return;
+  localStorage.removeItem(KEY);
+  D = { log: {}, pairs: [], settings: { maxDays: 14, warnDays: 2, restRemind: 5 } };
+  render(); showToast('リセットしました');
+}
+
+// ---- レンダリング ----
+function render() { renderHeader(); renderHero(); renderCalendar(); renderStats(); renderHistory(); applySettings(); }
+
+function renderHeader() {
+  const n = new Date();
+  const days = ['日','月','火','水','木','金','土'];
+  document.getElementById('headerDate').innerHTML =
+    `${n.getFullYear()}.${String(n.getMonth()+1).padStart(2,'0')}.${String(n.getDate()).padStart(2,'0')}<br>${days[n.getDay()]}曜日`;
+}
+
+function renderHero() {
+  const t = today();
+  const todayOff = isOff(t);
+  const p = curPair();
+
+  // ステータスチップ
+  const chip = document.getElementById('statusChip');
+  chip.className = 'status-chip';
+  if (!p) {
+    chip.classList.add('unset');
+    document.getElementById('statusText').textContent = 'ペア未開始';
+  } else if (todayOff) {
+    chip.classList.add('off');
+    document.getElementById('statusText').textContent = '今日は休息日';
+  } else {
+    chip.classList.add('wearing');
+    document.getElementById('statusText').textContent = '装着中（自動）';
+  }
+
+  // リング
+  const worn = wornCount();
+  const max  = D.settings.maxDays;
+  const rem  = Math.max(0, max - worn);
+  const pct  = Math.min(worn / max, 1);
+  const C    = 289.0;
+
+  document.getElementById('wornNum').textContent  = worn;
+  document.getElementById('ringNum').textContent   = rem;
+  document.getElementById('maxLabel').textContent  = max;
+
+  const ring = document.getElementById('ringProg');
+  ring.style.strokeDashoffset = C * (1 - pct);
+  const col = rem <= 0 ? 'var(--danger)' : rem <= D.settings.warnDays ? 'var(--warn)' : 'var(--accent)';
+  ring.style.stroke = col;
+  document.getElementById('ringNum').style.color = col;
+
+  // ペア開始ラベル
+  document.getElementById('pairStartLbl').textContent = p ? `開始 ${fmtDate(p.start)}` : '';
+
+  // ドットストリップ
+  const strip = document.getElementById('dotStrip');
+  strip.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'dot-cell';
+    if (p) {
+      const dd  = parseDate(p.start);
+      dd.setDate(dd.getDate() + i);
+      const iso = toISO(dd);
+      if (iso <= t) {
+        cell.classList.add(isOff(iso) ? 'off-dot' : 'worn-dot');
+      }
+      if (iso === t) cell.classList.add('current-dot');
+    }
+    strip.appendChild(cell);
+  }
+
+  // アラートバナー
+  const al = document.getElementById('alertBanner');
+  const iconAlert = '<svg width="14" height="14" style="flex-shrink:0"><use href="#ic-alert"/></svg>';
+  const iconCheck = '<svg width="14" height="14" style="flex-shrink:0"><use href="#ic-check"/></svg>';
+  const iconEye   = '<svg width="14" height="14" style="flex-shrink:0"><use href="#ic-eye-off"/></svg>';
+
+  if (!p) {
+    al.className = 'alert'; al.style.display = 'none';
+  } else if (rem <= 0) {
+    al.className = 'alert danger';
+    al.innerHTML = `${iconAlert}<span>使用期限を超過しています。今すぐ交換してください。</span>`;
+  } else if (rem <= D.settings.warnDays) {
+    al.className = 'alert warn';
+    al.innerHTML = `${iconAlert}<span>あと <strong>${rem}日</strong> で交換時期です。</span>`;
+  } else {
+    // 連続装着日数チェック
+    let streak = 0;
+    const dd = new Date();
+    while (true) {
+      const iso = toISO(dd);
+      if (iso < p.start || iso > t) break;
+      if (isOff(iso)) break;
+      streak++;
+      dd.setDate(dd.getDate() - 1);
+    }
+    if (streak >= D.settings.restRemind) {
+      al.className = 'alert warn';
+      al.innerHTML = `${iconEye}<span><strong>${streak}日連続</strong>装着中。目を休ませましょう。</span>`;
+    } else {
+      al.className = 'alert safe';
+      al.innerHTML = `${iconCheck}<span>良好。残り <strong>${rem}日</strong> 使用できます。</span>`;
+    }
+  }
+
+  // ボタンの disabled 制御
+  document.getElementById('btnOff').disabled   = (!p || todayOff);
+  document.getElementById('btnUndo').disabled  = !todayOff;
+}
+
+// ---- カレンダー ----
+let calY, calM;
+function initCal() { const n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); }
+function changeMonth(dir) {
+  calM += dir;
+  if (calM < 0)  { calM = 11; calY--; }
+  if (calM > 11) { calM = 0;  calY++; }
+  renderCalendar();
+}
+function renderCalendar() {
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('calMonthLabel').textContent = `${calY}年 ${months[calM]}`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['日','月','火','水','木','金','土'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el);
+  });
+  const firstDay = new Date(calY, calM, 1).getDay();
+  const daysInMonth = new Date(calY, calM + 1, 0).getDate();
+  const ti = today();
+  const pStarts = new Set(D.pairs.map(p => p.start));
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el  = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    if (iso === ti) el.classList.add('today');
+    if (iso > ti)   el.classList.add('future');
+    else if (isOff(iso))  el.classList.add('off-day');
+    else if (isWorn(iso)) el.classList.add('worn');
+    if (pStarts.has(iso)) el.classList.add('new-pair');
+    el.title = fmtFull(iso) + (isOff(iso) ? ' 休息' : isWorn(iso) ? ' 装着' : '');
+    grid.appendChild(el);
+  }
+}
+
+// ---- 統計 ----
+function renderStats() {
+  const now = new Date();
+  const y   = now.getFullYear();
+  const mo  = now.getMonth() + 1;
+  let mw = 0;
+  for (let d = 1; d <= now.getDate(); d++) {
+    const iso = `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (isWorn(iso)) mw++;
+  }
+  document.getElementById('statMonth').textContent = mw;
+  document.getElementById('statPairs').textContent = D.pairs.length;
+
+  // 連続装着日数（現在ペアの開始日まで遡る）
+  const p = curPair();
+  let streak = 0;
+  const dd = new Date();
+  const t  = today();
+  while (p) {
+    const iso = toISO(dd);
+    if (iso > t || iso < p.start) break;
+    if (isOff(iso)) break;
+    streak++;
+    dd.setDate(dd.getDate() - 1);
+  }
+  document.getElementById('statStreak').textContent = streak;
+
+  const rate = now.getDate() > 0 ? Math.round(mw / now.getDate() * 100) : 0;
+  document.getElementById('rateBar').style.width = rate + '%';
+  document.getElementById('rateVal').textContent  = rate + '%';
+
+  const tips = [
+    '週に1〜2日は装着を休むと目に優しいです。',
+    '就寝前は必ずレンズを外しましょう。',
+    '使用期限内でも目に違和感があればすぐに外して。',
+    '定期的に眼科での検診をおすすめします。',
+    'レンズを外した日は目薬で潤いをケアしましょう。',
+  ];
+  document.getElementById('tipText').textContent = tips[now.getDate() % tips.length];
+}
+
+// ---- 履歴 ----
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!D.pairs.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.72rem;padding:24px;">記録がありません</div>';
+    return;
+  }
+  const pStarts = new Set(D.pairs.map(p => p.start));
+  const earliest = D.pairs[0].start;
+  const t  = today();
+  const dd = new Date();
+  const entries = [];
+  let count = 0;
+  while (count < 45) {
+    const iso = toISO(dd);
+    if (iso < earliest) break;
+    if (iso <= t) {
+      const status = isOff(iso) ? 'off' : isWorn(iso) ? 'wore' : null;
+      if (status) entries.push([iso, status]);
+    }
+    dd.setDate(dd.getDate() - 1);
+    count++;
+  }
+  list.innerHTML = '';
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.72rem;padding:24px;">記録がありません</div>';
+    return;
+  }
+  entries.forEach(([date, st]) => {
+    const el = document.createElement('div');
+    el.className = 'h-item';
+    const isNew  = pStarts.has(date);
+    const autoTag = st === 'wore' ? '<span class="h-tag auto">AUTO</span>' : '';
+    el.innerHTML = `
+      <div class="h-dot ${st==='wore'?'w':'o'}"></div>
+      <span class="h-date">${fmtFull(date)}</span>
+      ${isNew ? '<span class="h-tag n">新ペア</span>' : ''}
+      ${autoTag}
+      <span class="h-tag ${st==='wore'?'w':'o'}">${st==='wore'?'装着':'休息'}</span>`;
+    list.appendChild(el);
+  });
+}
+
+function applySettings() {
+  document.getElementById('maxDays').value    = D.settings.maxDays;
+  document.getElementById('warnDays').value   = D.settings.warnDays;
+  document.getElementById('restRemind').value = D.settings.restRemind;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'stats')   renderStats();
+  if (name === 'history') renderHistory();
+}
+
+let _tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+load(); initCal(); render();
+</script>
+
+<script>
+// ---- PWA: inline manifest ----
+const manifestData = {
+  name: "LensLog",
+  short_name: "LensLog",
+  description: "2weekコンタクトレンズ管理アプリ",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#080a0f",
+  theme_color: "#080a0f",
+  icons: [
+    {
+      src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%23111520'/><ellipse cx='256' cy='256' rx='140' ry='95' fill='none' stroke='%237eb8f7' stroke-width='28'/><circle cx='256' cy='256' r='52' fill='none' stroke='%237eb8f7' stroke-width='28'/><circle cx='256' cy='256' r='20' fill='%237eb8f7'/></svg>`),
+      sizes: "512x512",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/manifest+json'});
+const manifestURL = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestURL;
+document.head.appendChild(link);
+
+// iOS用アイコン（SVGをcanvasでPNG化）
+function makeAppleIcon() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 180;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#111520';
+  ctx.beginPath();
+  ctx.roundRect(0,0,180,180,32);
+  ctx.fill();
+  ctx.strokeStyle = '#7eb8f7';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.ellipse(90,90,50,34,0,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(90,90,19,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle = '#7eb8f7';
+  ctx.beginPath();
+  ctx.arc(90,90,8,0,Math.PI*2);
+  ctx.fill();
+  const l = document.createElement('link');
+  l.rel = 'apple-touch-icon';
+  l.href = c.toDataURL();
+  document.head.appendChild(l);
+}
+makeAppleIcon();
+
+// ---- Service Worker (offline cache) ----
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'lenslog-v1';
+    const ASSETS = [self.location.href];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL).catch(()=>{});
+}
+</script>
+</body>
+</html>
